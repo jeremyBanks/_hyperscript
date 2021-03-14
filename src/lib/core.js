@@ -2531,10 +2531,11 @@
                 _parser.addGrammarElement("targetExpression", function(parser, runtime, tokens) {
                     tokens.matchToken("the"); // optional the
                     // TODO put parser into mode where [ is interpreted as a property ref
+                    // TODO expressions should say if they are writeable
                     var expr = parser.parseElement("primaryExpression", tokens);
                     if (expr.type === "symbol" || expr.type === "idRef" || expr.type === "inExpression" ||
                         expr.type === "queryRef" || expr.type === "classRef" || expr.type === "ofExpression" ||
-                        expr.type === "propertyAccess") {
+                        expr.type === "propertyAccess"|| expr.type === "hyperplaneReference") {
                         return expr;
                     } else {
                         _parser.raiseParseError(tokens, "A target expression must be writable");
