@@ -67,7 +67,7 @@
         } else if(hierarchy) {
             return new Proxy({}, {
                 get: function (obj, property) {
-                    return getHyperplaneValueForElt(context, property);
+                    return getHyperplaneValueForHierarchy(context, property);
                 },
                 set: function(obj, property, value) {
                     throw new Error("Cannot set values into hierarchy");
