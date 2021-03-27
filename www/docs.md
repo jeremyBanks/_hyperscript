@@ -18,13 +18,14 @@ title: ///_hyperscript
 * [the language](#lang)
   * [features](#features)
     * [on](#on)
-    * [worker](#worker)
+    * [worker](#workers)
   * [commands](#commands)
     * [pseudo-commands](#pseudo-commands)
   * [expressions](#expressions)
 * [async transparency](#async)
   * [async keyword](#async-keyword)
-  * [event driven control flow](#events)
+  * [event driven control flow](#event-control-flow)
+* [debugging](#debugging)
 * [extending](#extending)
 * [history](#history)
 
@@ -36,18 +37,19 @@ title: ///_hyperscript
 
 ## <a name="introduction"></a>[Introduction](#introduction)
 
-Hyperscript is a fun little scripting language for doing front end web development.
+Hyperscript is an experimental scripting language for doing front end web development.
 
 ### <a name='events'></a>[Event Handling](#events)
 
 The core feature of hyperscript is the ability to embed event handlers directly on HTML elements:
 
 ```html
-<button _="on click put 'I was clicked!' into my.innerHTML">
+<button _="on click put 'I was clicked!' into me">
   Click Me!
 </button>
 ``` 
-<button class='btn primary' _="on click put 'I was clicked!' into my.innerHTML 
+<button class='btn primary' 
+                  _="on click put 'I was clicked!' into me
                     then wait 2s
                     then put 'Click Me' into my.innerHTML">
   Click Me!
@@ -78,9 +80,9 @@ You may have noticed that the button above reset its text after a few seconds.
 Here is what the hyperscript actually looks like on that button:
 
 ```html
-<button class='btn primary' _="on click put 'I was clicked!' into my.innerHTML 
+<button class='btn primary' _="on click put 'I was clicked!' into me 
                                         wait 2s
-                                        put 'Click Me' into my.innerHTML">
+                                        put 'Click Me' into me">
   Click Me!
 </button>
 ```
@@ -91,9 +93,10 @@ Note the `wait 2s` command in this hyperscript.  This tells hyperscript to, well
 In javascript, this would be equivalent to the following `onClick` attribute:
 
 ```js
-this.innerHTML = "I was clicked!"
+var self = this;
+self.innerHTML = "I was clicked!"
 setTimeout(function(){
-  this.innerHTML = "Click Me"
+  self.innerHTML = "Click Me"
 }, 2000)
 ```
 
@@ -108,9 +111,9 @@ This may seem a little silly for just making `setTimeout()` a little better look
 
 ```html
 <button class='btn primary' _="on click fetch /clickedMessage 
-                                        put it into my.innerHTML 
+                                        put the result into me 
                                         wait 2s
-                                        put 'Click Me!' into my.innerHTML">
+                                        put 'Click Me!' into me">
   Click Me!
 </button>
 ```
@@ -118,9 +121,9 @@ This may seem a little silly for just making `setTimeout()` a little better look
 Try it, and check out the console:
 
 <button class='btn primary' _="on click fetch /clickedMessage 
-                                        then put it into my.innerHTML 
+                                        then put the result into me 
                                         then wait 2s
-                                        then put 'Click Me!' into my.innerHTML">
+                                        then put 'Click Me!' into me">
   Click Me!
 </button>
 
@@ -130,16 +133,16 @@ Let's jazz this example up a bit by adding some fade transitions
 
 ```html
 <button class='btn primary' _="on click fetch /clickedMessage then transition opacity to 0
-                                        put it into my.innerHTML then transition opacity to 1
+                                        put the result into me then transition opacity to 1
                                         wait 2s then transition opacity to 0
-                                        put 'Click Me!' into my.innerHTML then transition opacity to 1">
+                                        put 'Click Me!' into me then transition opacity to 1">
   Click Me!
 </button>
 ```
 <button class='btn primary' _="on click fetch /clickedMessage then transition opacity to 0
-                                        put it into my.innerHTML then transition opacity to 1
+                                        put the result into me then transition opacity to 1
                                         wait 2s then transition opacity to 0
-                                        put 'Click Me!' into my.innerHTML then transition opacity to 1">
+                                        put 'Click Me!' into me then transition opacity to 1">
   Click Me!
 </button>
 
@@ -147,8 +150,8 @@ Here we are using the `then` keyword to separate commands that are on the same l
 them logically and making the code read really nicely.  We use the `transition` command to
 transition smoothly between opacities.  
 
-Note that the `transition` command is asynchronous: it doesn't complete until the transition i
-s done, but the hyperscript runtime recognizes this and allows you to write standard, 
+Note that the `transition` command is asynchronous: it doesn't complete until the transition is
+done, but the hyperscript runtime recognizes this and allows you to write standard, 
 linear-style code with it.
 
 Now, this example is a little gratuitous, admittedly, but you can imagine what the equivalent javascript would look like: a mess of confusing callbacks.  The point isn't that you should use this UX pattern, but rather to show how async transparency can be used practically.
@@ -177,7 +180,7 @@ OK, let's get on with it...
 Hyperscript is a dependency-free javascript library that can be included in a web page without any build steps:
 
 ```html
-<script src="https://unpkg.com/hyperscript.org@0.0.5"></script>
+<script src="https://unpkg.com/hyperscript.org@0.0.8"></script>
 ```
 
 After you've done this, you can begin adding hyperscript to elements:
@@ -253,7 +256,12 @@ You may also want to simply head over to the [cookbook](/cookbook) for existing 
 
 ## <a name="features"></a>[Features](#features)
 
-Top level constructs in hyperscript are called "features".  They provide entry points into the hyperscript runtime through functions, event handlers and so forth.  
+Top level constructs in hyperscript are called "features".  They provide entry points into the hyperscript runtime 
+through functions, event handlers and so forth.  Features defined in a `script` tag will be applied to the 
+document body and the global namespace.
+
+Features defined on an element will be applied to that element and, in the cases of functions, etc. available to all
+child elements.
 
 Below are the core features of hyperscript.
 
@@ -397,7 +405,7 @@ Note that you can use the js feature below if you want to use javascript in your
 
 ### <a name="js"></a>[The JS Feature](#js)
 
-The [js feature](/features/worker) allows you define javascript within hyperscript script tags.  You might do this for performance reasons, since the hyperscript runtime is more focused on flexibility, rather than performance.  This feature is most useful in [workers](#workers), when you want to pass javascript across to the worker's implementation:
+The [js feature](/features/js) allows you define javascript within hyperscript script tags.  You might do this for performance reasons, since the hyperscript runtime is more focused on flexibility, rather than performance.  This feature is most useful in [workers](#workers), when you want to pass javascript across to the worker's implementation:
 
 ```html
 <script type="text/hyperscript">
@@ -414,14 +422,17 @@ The [js feature](/features/worker) allows you define javascript within hyperscri
 </script>
 ```
 
-Note that there is also a way to include [inline javascript](#inline_js)
+Note that there is also a way to include [inline javascript](#inline-js)
 within a hyperscript function, for local optimizations.
 
 ## <a name="commands"></a>[Commands](#commands)
 
-Commands are the statements of the hyperscript langauge, and make up the body of functions, event handlers and so on.  In hyperscript, all commands start with a term, such as `add`, `remove` or `fetch`. 
+Commands are the statements of the hyperscript langauge, and make up the body of functions, event handlers and so on.  In 
+hyperscript, all commands start with a term, such as `add`, `remove` or `fetch`. 
 
 Commands may be separated with a `then` keyword.  This is recommended in one-liner event handlers but is not required.
+
+All commands may be followed by an `unless <expr>` that makes the command conditionally executed.
 
 ### <a name="add"></a>[Add](#add)
 
@@ -638,6 +649,8 @@ Here are some examples:
   Click Me
 </button>
 ```
+
+You may use the `exit` form to exit without a value.
 
 ### <a name="send"></a>[Send](#send)
 
@@ -863,7 +876,7 @@ Here are some examples:
 </button>
 ```
 
-### <a name="js-command"></a>[Inline Javascript](#js-command)
+### <a name="js-command"></a>[Inline Javascript](#inline-js)
 
 Performance is an, ahem, *secondary* consideration in hyperscript and, while it is fast enough
 in most cases, there are times when you may want to kick out to javascript.  You may of course
@@ -926,13 +939,13 @@ Strings, numbers, `true`, `false` and `null` all work as you'd expect.
 Mathematical operators work normally *except*  that you cannot mix different mathematical operators without
 parenthesizing them to clarify binding.
 
-```
+```hyperscript
   set x to 1 * (2 + 3)
 ```
 
 Logical operators use the english terms `and`, `or` and `not` and must also be fully disambiguated.
 
-```
+```hyperscript
   if foo and bar
     log "Foo & Bar!"
   end
@@ -940,7 +953,7 @@ Logical operators use the english terms `and`, `or` and `not` and must also be f
 
 Comparison operators are the normal '==', '<=', etc.  You can is `is` and `is not` in place of `==` and `!==` respectively.
 
-```
+```hyperscript
   if foo is bar
     log "Foo is Bar!"
   end
@@ -948,7 +961,7 @@ Comparison operators are the normal '==', '<=', etc.  You can is `is` and `is no
 
 Hyperscript also supports a `no` operator to test for `== null`
 
-```
+```hyperscript
   if no foo
     log "foo was null-ish"
   end
@@ -956,7 +969,7 @@ Hyperscript also supports a `no` operator to test for `== null`
 
 Array and object literals work the same as in javascript:
 
-```
+```hyperscript
   set x to {arr:[1, 2, 3]}
 ```
 
@@ -968,21 +981,21 @@ Hyperscript closures may only have an expression body.  They cannot have return 
 hyperscript is async-transparent, the need for complex callbacks is minimized, and by only allowing expressions
 in closure bodies, hyperscript eliminates ambiguity around things like `return`, `throw` etc.
 
-```
+```hyperscript
     set arr to ["a", "ab", "abc"]
     set lengths to arr.map( \ str -> str.length )
 ```
 
 Hyperscript supports literal values for CSS-style id's and classes:
 
-```
+```hyperscript
   add .disabled to #myDiv
   for tab in .tabs
     add .highlight to tab
   end
 ```
 
-#### The Hyperscript Zoo
+#### <a name='zoo'></a>[The Hyperscript Zoo](#zoo)
 
 Hyperscript supports a few default symbols that have specific meanings
 
@@ -1100,7 +1113,7 @@ to invoke `theAnswer()` but not wait on it to return, you could update the event
 </button>
 ```
 
-### <a name="events"></a>[Event Driven Control Flow](#events)
+### <a name="event-control-flow"></a>[Event Driven Control Flow](#event-control-flow)
 
 One of the extremely interesting abilities that this async-transparent runtime gives hyperscript is the ability to have
 event driven control flow:
@@ -1163,6 +1176,50 @@ because the event listener that terminates the loop is only consulted once a com
 
 This I hope gives you a taste of the unique execution model of hyperscript, and what uses it might be put to.
 
+## <a name="debugging"></a>[Debugging (Alpha)](#debugging)
+
+**Note: The hyperscript debugger is in alpha and, like the rest of the language, is undergoing active development**
+
+Hyperscript includes a debugger, [hdb](/hdb), that allows you to debug by inserting `breakpoint` commands in your hyperscript.
+
+To use it you need to include the `lib/hdb.js` file.  You can then add `breakpoint` commands in your hyperscript
+to trigger the debugger.  
+
+```html
+<div>
+Debug: <input id="debug-on" type='checkbox' checked="checked">
+</div>
+<button _="on click 
+             if #debug-on matches <:checked/> 
+               breakpoint
+             end
+             tell #debug-demo
+               transition 'background-color' to red
+               transition 'background-color' to green
+               transition 'background-color' to blue
+               transition 'background-color' to initial
+           ">Colorize...</button>
+
+<div id="debug-demo">TechnoColor Dream Debugging...</div>
+```
+
+<div>
+Debug: <input id="debug-on" type='checkbox' checked="checked">
+</div>
+<button class='btn primary' 
+        _="on click 
+            if #debug-on matches <:checked/> 
+              breakpoint
+            end
+            tell #debug-demo
+              transition 'background-color' to red
+              transition 'background-color' to green
+              transition 'background-color' to blue
+              transition 'background-color' to initial
+           ">Colorize...</button>
+
+<div id="debug-demo">TechniColor Dream Debugging...</div>
+
 ## <a name="extending"></a>[Extending](#extending)
 
 Hyperscript has a pluggable grammar that allows you to define new features, commands and certain types of expressions.
@@ -1200,7 +1257,7 @@ was "foo":
 
 With this command defined you can now write the following hyperscript:
 
-```text
+```hyperscript
   def testFoo()
     set str to "foo" 
     foo str
@@ -1233,3 +1290,4 @@ The more I looked at it, the more I thought that there was a need for a small, d
 than an explosion in attributes and inline javascript, or a hacky custom syntax as with `ic-action`.
 
 </div>
+

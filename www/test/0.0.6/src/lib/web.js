@@ -576,7 +576,9 @@
             var to = [];
             var currentToken = tokens.currentToken();
             while (!parser.commandBoundary(currentToken) && currentToken.value !== "using") {
-                properties.push(tokens.requireTokenType("IDENTIFIER").value);
+
+                properties.push(parser.requireElement("stringLike", tokens));
+
                 if (tokens.matchToken("from")) {
                     from.push(parser.requireElement("stringLike", tokens));
                 } else {
@@ -592,8 +594,8 @@
 
             var transition = {
                 to: to,
-                args: [targets, from, to, using],
-                op: function (context, targets, from, to, using) {
+                args: [targets, properties, from, to, using],
+                op: function (context, targets, properties, from, to, using) {
                     var promises = [];
                     runtime.forEach(targets, function(target){
                         var promise = new Promise(function (resolve, reject) {
@@ -680,39 +682,36 @@
         }
     });
 
-    _hyperscript.config.conversions["Values"] = function(node) {
+    _hyperscript.config.conversions["Values"] = function(/** @type {Node | NodeList} */ node) {
 
-        // Try to get a value directly from this node
-        var input = getInputInfo(node);
+        /** @type Object<string,string | string[]> */
+        var result = {};
 
-        if (input !== undefined) {
-            return input.value;
-        }
+        var forEach = _hyperscript.internals.runtime.forEach;
 
-        // Otherwise, try to query all child elements of this node that *should* contain values.
-        if (node.querySelectorAll != undefined) {
+        forEach(node, function(/** @type HTMLInputElement */ node) {
 
-            /** @type Object<string,string> */
-            var result = {};
+            // Try to get a value directly from this node
+            var input = getInputInfo(node);
 
-            var children = node.querySelectorAll("input,select,textarea");
-
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                appendValue(result, child);
+            if (input !== undefined) {
+                result[input.name] = input.value;
+                return;
             }
 
-            return result;
-        }
+            // Otherwise, try to query all child elements of this node that *should* contain values.
+            if (node.querySelectorAll != undefined) {
+                var children = node.querySelectorAll("input,select,textarea");
+                forEach(children, appendValue);
+            }
+        })
 
-        // Otherwise, there is no value to return.
-        return null;
+        return result;
 
         /**
-         * @param {Object<string,(string|string[])>} result
          * @param {HTMLInputElement} node 
          */
-        function appendValue(result, node) {
+        function appendValue(node) {
 
             var info = getInputInfo(node);
 

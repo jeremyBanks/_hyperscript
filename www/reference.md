@@ -12,6 +12,8 @@ title: ///_hyperscript
 | [js](/features/js) | Embed JavaScript code at the top level | [see details...](/features/js)
 | [worker](/features/worker) | Create a Web Worker for asynchrnous work
 | [eventsource](/features/event-source) | Subscribe to Server Sent Events (SSE)
+| [socket](/features/socket) | Create a Web Socket
+| [init](/features/init) | Initialization logic to be run when the code is first loaded
 
 ## <a name='commands'></a>[Commands](#commands)
 
@@ -39,7 +41,8 @@ title: ///_hyperscript
 | [transition](/commands/transition) | Transitions properties on an element | `transition opacity to 0`
 | [trigger](/commands/trigger) | triggers an event on the current element | `trigger customEvent`
 | [wait](/commands/wait) | Waits for an event or a given amount of time before resuming the command list | `wait 2s then remove me`
-| [with](/commands/with) | Temporarily sets a new `me` value | `with <p/> add .highlight`
+| [tell](/commands/tell) | Temporarily sets a new implicit target value | `with <p/> add .highlight`
+| [go](/commands/go) | Navigate to a new page or within a page | `go to the top of the body smoothly`
 
 ## <a href='expressions'></a>[Expressions](#expressions)
 
@@ -62,6 +65,7 @@ See [expressions](/expressions) for an overview.
 | [closest expression](/expressions/closest) | Find closest element | `closest <div/>`
 | [of expression](/expressions/of) | Get a property of an object | `the location of window`
 | [positional expressions](/expressions/positional) | Get a positional value out of an array-like object | `first from <div/>`
+| [possessive expressions](/expressions/possessive) | Get a property or attribute from an element | `the window's location`
 | array literal | Javascript-style array literals | `[1, 2, 3]`
 | boolean literal | Javascript-style booleans | `true false`
 | math operator | Javascript-style mathematical operators | `1 + 2`

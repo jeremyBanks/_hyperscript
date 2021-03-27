@@ -1,38 +1,56 @@
 ## TODOs
 
-### 0.0.5 release
-* docs
+### In Progress
+* Deniz - template tag support
 
 ### Language Features
-* functions on elements (store in hyperplane if available)
-* animate command ? I don't see a lot of value add (unlike transition)
-* Event model
-* Debugging
-* range operator
-* repeat command improvements
-```
-// By default, counter uses "it" convention
-repeat from 1 to 10 
-    put it in myVar
-end
-
-// This would also work if IterableVariable is an Array or Object
-repeat for x in IterableVariable
-    call JsFn(x)
-end
-```
-* Support a `timeout` modifier for async commands like `fetch`, `call`, `wait for` etc.
-* functions should be able to be marked `sync` to make only one execution at a time occur, in serial fashion
-* unify attribute literals and array literals with lookahead
-* unify all css() like literals to a general dynamic evaluation (eval is context sensitive)
-* `default <identifier> to <expression> ` - default a value if it does not exist
-* `increment/decrement` commands
-* Better DOM manipulation tools
+* `reply` & `wait for response` in event handlers
+* garbage collect event listeners added to external elements periodically (?)
+* improve `fetch` command w/ more obvious syntax for body, headers, etc.
+  ```text
+    fetch /foo with a POST 
+    fetch /foo with a POST and body {foo:"bar"}
+    fetch /foo with a POST and body {foo:"bar"} and headers {blah:'blah'}
+  ```
+  * make defaults pluggable 
+  * resurrect `ajax` command?  (had more functionality in some ways)
+*  Support a `timeout` modifier for commands like `fetch`, `call`, `wait for` etc.
+  * deep project involving dealing w/ async commands not executing if they time out during execution
 * `merge/merge into` - Merge objects with one another
+* `delete` command
+* `increment/decrement` commands
+* `default` command
+  ```text
+    default x to 10
+  ```
+* runtime type checked parameters and return types
+  ```text
+    def(foo:String!) : String!
+    end
+  ```
+* Better DOM manipulation tools? (needs research)
+* Full `sed` command for string manipulation?
+* `play` command using [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
+* Support parenthesizes expressions in pseudopossessives: `transition (the div's parent's parent)'s opacity to 1`
+* Event model
+* functions should be able to be marked `sync` to make only one execution at a time occur, in serial fashion
+* unify all css() like literals to a general dynamic evaluation (eval is context sensitive)
 * Make `first, last, random` work as identifiers (backtracking parser)
+* repeat command improvements
+    ```
+    // By default, counter uses "it" convention
+    repeat from 1 to 10 
+        put it in myVar
+    end
+    
+    // This would also work if IterableVariable is an Array or Object
+    repeat for x in IterableVariable
+        call JsFn(x)
+    end
+    ```
 
-#### Speculative Language Features
-* /// The Hyperplane
+#### /// The Hyperplane
+* A mechanism for storing values in the DOM that respects HATEOAS
   
   ```
     log /x -- a variable associated with the current 'me'
@@ -67,12 +85,6 @@ end
   <div>///somePersistentVar</div>
   ```
 
-* A reversable syntax for state-based transformations of DOM elements
-```
-  while hover add .foo
-```
-
-### Parser Infrastructure
+### Infrastructure
 * Recovering parser (we are single error right now)
-* Pull hyperscript core out?
-* Make tokenizer pluggable with new tokenization elements
+* Handle multiple returns/throws in an async context (timeout, async, etc.)

@@ -21,22 +21,25 @@ hyperscript features include:
 
 <div style="padding: 16px">
 
-* inline embedding on HTML elements
-* tools for working with DOM events, including event-driven control flow
-* a DOM-oriented syntax, such as element id and class literals
-* first class [web workers](/docs#workers)
-* [async-transparancy](/docs#async)
-* A pluggable, extendable parser & grammar
+* Events are first class citizens in the language with clean syntax for [responding to](/features/on) and 
+  [sending](/commands/send) events, as well as [event-driven control flow](docs/#event-control-flow)
+* DOM-oriented syntax, such as [CSS id, CSS class and  CSS query literals](https://hyperscript.org/expressions/#css)
+* First class [web workers](/docs#workers)
+* An [async-transparent](/docs#async) runtime, which removes the distinction between synchronous and asynchronous code
+* A [pluggable & extendable](/docs/#extending) parser & grammar
+* A [debugger](/docs#debugging) to step through hyperscript code
 
 </div>
 
-hyperscript is a companion project of [htmx](https://htmx.org).  Because Promises are not available in IE, unlike htmx, 
-hyperscript does not strive for IE11 compatibility.
+You can see a comparison of hyperscript, vanillaJS and jQuery [here](/comparison).
+
+hyperscript is a companion project of [htmx](https://htmx.org) but note that because 
+[promises are not available in IE](https://caniuse.com/?search=Promise) hyperscript does *not* strive for IE11 compatibility.
 
 ## examples
 
 ```html
-<script src="https://unpkg.com/hyperscript.org@0.0.5"></script>
+<script src="https://unpkg.com/hyperscript.org@0.0.8"></script>
 
 <button _="on click toggle .big-text">
   Toggle the "big-text" class on me on click
