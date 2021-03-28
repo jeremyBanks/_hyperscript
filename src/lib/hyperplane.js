@@ -1,24 +1,39 @@
 (function () {
 
-    function getHyperplaneValueForElt(elt, name) {
-        var hyperPlane = elt.getAttribute('data-hyperplane');
-        if(hyperPlane) {
-            var parsed = JSON.parse(hyperPlane);
-            return parsed[name];
+    function deserializeValue(str) {
+        try {
+            return JSON.parse(str);
+        } catch (e) {
+            return str;
+        }
+    }
+
+    function serializeValue(val) {
+        if (typeof val === 'string' || val instanceof String) {
+            try {
+                JSON.parse(val); // if the parse succeeds, we need to escape the string
+                return JSON.stringify(val);
+            } catch (e) {
+                return val;  // not ambiguous w/ JSON, can just output the value
+            }
         } else {
-            return null;
+            return JSON.stringify(val);
+        }
+    }
+
+    function getHyperplaneValueForElt(elt, name) {
+        if (elt.hasAttribute('data-' + name)) {
+            var attrValue = elt.getAttribute('data-' + name);
+            return deserializeValue(attrValue);
         }
     }
 
     function setHyperplaneValueForElt(elt, name, value) {
-        var hyperPlane = elt.getAttribute('data-hyperplane');
-        if(hyperPlane) {
-            var parsed = JSON.parse(hyperPlane);
+        if (value) {
+            elt.setAttribute('data-' + name, serializeValue(value));
         } else {
-            var parsed = {};
+            elt.removeAttribute('data-' + name);
         }
-        parsed[name] = value;
-        elt.setAttribute('data-hyperplane', JSON.stringify(parsed));
     }
 
     function getHyperplaneValueForHierarchy(elt, name) {
@@ -32,25 +47,27 @@
         }
     }
 
-    function getHyperplaneValueForStorage(name) {
-        var hyperPlane = localStorage.getItem('hyperplane');
-        if(hyperPlane) {
-            var parsed = JSON.parse(hyperPlane);
-            return parsed[name];
+    function setHyperplaneValueForHierarchy(elt, name, value) {
+        if (elt.matches('body') || elt.hasAttribute("data-" + name)) {
+            elt.setAttribute("data-" + name, serializeValue(value));
         } else {
-            return null;
+            setHyperplaneValueForElt(elt.parentElement, name, value);
+        }
+    }
+
+    function getHyperplaneValueForStorage(name) {
+        var value = localStorage.getItem(name);
+        if(value) {
+            return deserializeValue(value);
         }
     }
 
     function setHyperplaneValueForStorage(name, value) {
-        var hyperPlane = localStorage.getItem('hyperplane');
-        if(hyperPlane) {
-            var parsed = JSON.parse(hyperPlane);
+        if (value) {
+            localStorage.setItem(name, serializeValue(value));
         } else {
-            var parsed = {};
+            localStorage.removeItem(name);
         }
-        parsed[name] = value;
-        localStorage.setItem('hyperplane', JSON.stringify(parsed));
     }
 
     function getHyperPlane(context, persistent, hierarchy) {
@@ -70,7 +87,7 @@
                     return getHyperplaneValueForHierarchy(context, property);
                 },
                 set: function(obj, property, value) {
-                    throw new Error("Cannot set values into hierarchy");
+                    return setHyperplaneValueForHierarchy(context, property);
                 }
             });
         } else {
@@ -87,13 +104,13 @@
     }
 
     function slashes(tokens, count) {
-        count--;
-        while (count > 0) {
-            var token = tokens.token(count);
+        var tokenIndex = 0;
+        while (tokenIndex < count) {
+            var token = tokens.token(tokenIndex);
             if (!token.op || !token.value === "/") {
                 return false;
             }
-            count--;
+            tokenIndex++;
         }
         return true;
     }
@@ -111,7 +128,7 @@
                 }
             }
 
-            var slot = tokens.requireTokenType("IDENTIFIER");
+            var slot = parser.requireElement("dotOrColonPath", tokens);
 
             var root = {
                 type:'hyperplane',
